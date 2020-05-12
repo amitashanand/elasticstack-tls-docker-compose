@@ -1,0 +1,12 @@
+filebeat.inputs:
+- type: log
+  paths:
+    - /usr/share/filebeat/logstash-sample.log
+
+processors:
+- add_tags:
+    tags: [web, production]
+    target: "environment"
+
+output.logstash:
+  hosts: ["logstash01:5044"]
