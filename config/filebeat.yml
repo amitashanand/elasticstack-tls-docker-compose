@@ -8,5 +8,11 @@ processors:
     tags: [web, production]
     target: "environment"
 
-output.logstash:
-  hosts: ["logstash01:5044"]
+output.elasticsearch:
+  hosts: ["https://es01:9200"]
+  ssl.enabled: true
+  username: "elastic"
+  password: "GHimwcXsFGNDVCDG81SO"
+  ssl.certificate_authorities: "/usr/share/elasticsearch/config/certificates/ca/ca.crt"
+  # ssl.certificate: "/usr/share/elasticsearch/config/certificates/filebeat01/filebeat01.key"
+  # ssl.key: "/usr/share/elasticsearch/config/certificates/filebeat01/filebeat01.crt"

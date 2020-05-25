@@ -7,8 +7,8 @@ services:
     environment:
       - node.name=es01
       - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es02,es03
-      - cluster.initial_master_nodes=es01,es02,es03
+      # - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - xpack.license.self_generated.type=trial 
@@ -40,72 +40,10 @@ services:
       timeout: 10s
       retries: 5
 
-  es02:
-    image: docker.elastic.co/elasticsearch/elasticsearch:${VERSION}
-    container_name: es02
-    environment:
-      - node.name=es02
-      - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es01,es03
-      - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.license.self_generated.type=trial
-      - xpack.security.enabled=true
-      - xpack.security.http.ssl.enabled=true
-      - xpack.security.http.ssl.key=$CERTS_DIR/es02/es02.key
-      - xpack.security.http.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
-      - xpack.security.http.ssl.certificate=$CERTS_DIR/es02/es02.crt
-      - xpack.security.transport.ssl.enabled=true
-      - xpack.security.transport.ssl.verification_mode=certificate
-      - xpack.security.transport.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
-      - xpack.security.transport.ssl.certificate=$CERTS_DIR/es02/es02.crt
-      - xpack.security.transport.ssl.key=$CERTS_DIR/es02/es02.key
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - data02:/usr/share/elasticsearch/data
-      - certs:$CERTS_DIR
-    networks:
-      - elastic
-
-  es03:
-    image: docker.elastic.co/elasticsearch/elasticsearch:${VERSION}
-    container_name: es03
-    environment:
-      - node.name=es03
-      - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es01,es02
-      - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.license.self_generated.type=trial
-      - xpack.security.enabled=true
-      - xpack.security.http.ssl.enabled=true
-      - xpack.security.http.ssl.key=$CERTS_DIR/es03/es03.key
-      - xpack.security.http.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
-      - xpack.security.http.ssl.certificate=$CERTS_DIR/es02/es02.crt
-      - xpack.security.transport.ssl.enabled=true
-      - xpack.security.transport.ssl.verification_mode=certificate
-      - xpack.security.transport.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
-      - xpack.security.transport.ssl.certificate=$CERTS_DIR/es03/es03.crt
-      - xpack.security.transport.ssl.key=$CERTS_DIR/es03/es03.key
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - data03:/usr/share/elasticsearch/data
-      - certs:$CERTS_DIR
-    networks:
-      - elastic
-
   kib01:
     image: docker.elastic.co/kibana/kibana:${VERSION}
     container_name: kib01
-    depends_on: {"es01": {"condition": "service_healthy"}}
+    # depends_on: {"es01": {"condition": "service_healthy"}}
     ports:
       - 5601:5601
     environment:
@@ -113,37 +51,22 @@ services:
       ELASTICSEARCH_URL: https://es01:9200
       ELASTICSEARCH_HOSTS: https://es01:9200
       ELASTICSEARCH_USERNAME: kibana
-      ELASTICSEARCH_PASSWORD: CHANGEME
+      ELASTICSEARCH_PASSWORD: UvHzL6gbntHqObzLC72Y
       ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: $CERTS_DIR/ca/ca.crt
       SERVER_SSL_ENABLED: "true"
       SERVER_SSL_KEY: $CERTS_DIR/kib01/kib01.key
       SERVER_SSL_CERTIFICATE: $CERTS_DIR/kib01/kib01.crt
-    volumes:
-      - certs:$CERTS_DIR
-    networks:
-      - elastic
+      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: "any_thing_of_32_character_long_valid"
+      XPACK_ACTTIONS_WHITELISTEDHOSTS: "['*']"
+      XPACK.ACTTIONS.ENABLEACTIONTYPES: "['*']"
+      # xpack.encryptedSavedObjects.encryptionKey
+      # xpack.actions.whitelistedHosts
+      # xpack.actions.enabledActionTypes
 
-  logstash01:
-    image: docker.elastic.co/logstash/logstash:${VERSION}
-    container_name: logstash01
-    depends_on: 
-      - "es01"
-    ports:
-      - 8089:8080
-    environment:
-      - SERVERNAME= localhost
-      - ELASTICSEARCH_URL= https://es01:9200
-      - ELASTICSEARCH_HOSTS= https://es01:9200
-      - XPACK_MONITORING_ENABLED= false
-      # - XPACK_MONITORING_ELASTISEARCH_URL= https://es01:9200   
-      # - XPACK_MONITORING_ELASTICSEARCH_HOSTS= https://es01:9200
-      # - XPACK_MONITORING_ELASTICSEARCH_USERNAME= logstash_system
-      # - XPACK_MONITORING_ELASTICSEARCH_PASSWORD= CHANGEME
-      # - XPACK_MONITORING_ELASTICSEARCH_SSL_CA= $CERTS_DIR/ca/ca.crt
-      # - XPACK_MONITORING_ELASTICSEARCH_SSL_KEY=$CERTS_DIR/logstash01/logstash01/logstash01.key
-      # - XPACK_MONITORING_ELASTICSEARCH_SSL_CERTIFICATE=$CERTS_DIR/logstash01/logstash01.crt
+
+
+
     volumes:
-      - ./config/:/usr/share/logstash/pipeline/
       - certs:$CERTS_DIR
     networks:
       - elastic
@@ -152,10 +75,21 @@ services:
     image: docker.elastic.co/beats/filebeat:${VERSION}
     container_name: filebeat01
     depends_on: 
-      - "logstash01"
+      - "es01"
     ports:
       - 5044:5044
+    # environment:
+    #   # SERVERNAME: localhost
+    #   # ELASTICSEARCH_URL: https://es01:9200
+    #   ELASTICSEARCH_HOSTS: https://es01:9200
+    #   ELASTICSEARCH_USERNAME: elastic
+    #   ELASTICSEARCH_PASSWORD: GHimwcXsFGNDVCDG81SO
+    #   ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: $CERTS_DIR/ca/ca.crt
+    #   SERVER_SSL_ENABLED: "true"
+      # SERVER_SSL_KEY: $CERTS_DIR/kib01/kib01.key
+      # SERVER_SSL_CERTIFICATE: $CERTS_DIR/kib01/kib01.crt
     volumes:
+      - certs:$CERTS_DIR
       - ./config/filebeat.yml:/usr/share/filebeat/filebeat.yml
       - ./sample-log/logstash-sample.log:/usr/share/filebeat/logstash-sample.log
     networks:
@@ -163,10 +97,6 @@ services:
 
 volumes:
   data01:
-    driver: local
-  data02:
-    driver: local
-  data03:
     driver: local
   certs:
     driver: local

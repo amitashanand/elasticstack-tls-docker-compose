@@ -6,26 +6,16 @@ instances:
       ip:
         - 127.0.0.1
   
-    - name: es02
-      dns:
-        - es02
-        - localhost
-      ip:
-        - 127.0.0.1
-  
-    - name: es03
-      dns:
-        - es03
-        - localhost
-      ip:
-        - 127.0.0.1
-  
     - name: 'kib01'
       dns:
         - kib01
         - localhost
+      ip:
+        - 127.0.0.1
     
-    - name: 'logstash01'
+    - name: 'filebeat01'
       dns:
-        - logstash01
+        - filebeat01
         - localhost
+      ip:
+        - 127.0.0.1
