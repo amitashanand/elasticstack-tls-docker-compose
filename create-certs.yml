@@ -18,12 +18,12 @@ services:
       - certs:/certs
       - .:/usr/share/elasticsearch/config/certificates
     networks:
-      - elastic
+      - elastic-net
 
 volumes:
   certs:
     driver: local
 
 networks:
-  elastic:
+  elastic-net:
     driver: bridge

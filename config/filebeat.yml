@@ -9,10 +9,11 @@ processors:
     target: "environment"
 
 output.elasticsearch:
-  hosts: ["https://es01:9200"]
+  hosts: ["https://elastic:9200"]
   ssl.enabled: true
   username: "elastic"
-  password: "GHimwcXsFGNDVCDG81SO"
+  password: "5h4PgKfYZia2YpChK0UG"
   ssl.certificate_authorities: "/usr/share/elasticsearch/config/certificates/ca/ca.crt"
-  # ssl.certificate: "/usr/share/elasticsearch/config/certificates/filebeat01/filebeat01.key"
-  # ssl.key: "/usr/share/elasticsearch/config/certificates/filebeat01/filebeat01.crt"
+  # In this case, ssl.certificate & ssl.key are optional configurations
+#  ssl.certificate: "/usr/share/elasticsearch/config/certificates/filebeat01/filebeat01.key"
+#  ssl.key: "/usr/share/elasticsearch/config/certificates/filebeat01/filebeat01.crt"
